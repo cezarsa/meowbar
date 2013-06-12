@@ -28,12 +28,11 @@
     position: absolute;
     top: 0;
     right: 6px;
+    background-color: #7a7c7f;
     background-color: rgba(0, 0, 0, 0.4);
     height: 100%;
     width: 5px;
     border-radius: 3px;
-
-    background-color: #7a7c7f\9;
 
     -webkit-transition: width 100ms linear, right 100ms linear, border-radius 100ms linear;
     -moz-transition: width 100ms linear, right 100ms linear, border-radius 100ms linear;

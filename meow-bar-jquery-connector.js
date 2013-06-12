@@ -8,6 +8,13 @@
         },
         preventDefault: function(ev) {
             ev.preventDefault();
+        },
+        elementHeight: function(el) {
+            return $(el).height();
+        },
+        topMargin: function(el) {
+            el = $(el);
+            return parseInt(el.css('margin-top'), 10) + parseInt(el.css('border-top-width'), 10);
         }
     };
 }(this, jQuery));

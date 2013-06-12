@@ -13,6 +13,7 @@
     MeowBar.prototype = {
         constructor: MeowBar,
         margin: 5,
+        minScrollBarSize: 50,
 
         createElements: function() {
             this.actualBarElement = document.createElement('div');
@@ -46,8 +47,8 @@
 
         calculateDimensions: function() {
             var realHeight = this.realScrollable.scrollHeight,
-                viewportTotalHeight = this.fakeScrollable.offsetHeight,
-                viewportHeight = viewportTotalHeight - (2 * this.margin),
+                viewportTotalHeight = MeowBar.connector.elementHeight(this.fakeScrollable),
+                viewportHeight = viewportTotalHeight - (2 * MeowBar.prototype.margin),
                 relation = viewportHeight / realHeight;
 
             var height = 0;
@@ -55,9 +56,12 @@
                 height = relation * viewportHeight;
             }
 
-            this.scrollHeight = height;
+            this.scrollHeight = Math.max(this.minScrollBarSize, height);
             this.viewportHeight = viewportHeight;
-            this.relation = relation;
+
+            var adjustedViewportHeight = this.viewportHeight + height - this.scrollHeight;
+            this.relation = adjustedViewportHeight / realHeight;
+            this.margin = MeowBar.prototype.margin + MeowBar.connector.topMargin(this.fakeScrollable);
         },
 
         handleDrag: function(ev) {
