@@ -1,7 +1,7 @@
 {
   "name": "meowbar",
   "version": "0.2.0",
-  "main": ["dist/meow-bar.basic.min.js", "dist/meow-bar.min.css"],
+  "main": "dist/meow-bar.basic.min.js",
   "ignore": [
     "**/.*",
     "node_modules",
