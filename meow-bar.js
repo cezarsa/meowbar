@@ -3,8 +3,11 @@
     var baseOptions = {
         margin: 5,
         minScrollBarSize: 50,
-        init: false
+        init: false,
+        transform3d: false
     };
+
+    var prefixes = ['-webkit-', '-moz-', '-ms-', ''];
 
     var MeowBar = function(realScrollable, fakeScrollable, options) {
         this.realScrollable = realScrollable;
@@ -116,7 +119,13 @@
         _setScrollbar: function(pos) {
             pos = Math.max(this.margin, Math.min(this.viewportHeight - this.scrollHeight + this.margin, pos));
             this.currentPos = pos;
-            this.handlingArea.style.top = Math.round(pos) + 'px';
+            if (this.options.transform3d) {
+                for (var i = 0; i < prefixes.length; ++i) {
+                    this.handlingArea.style[prefixes[i] + 'transform'] = 'translate3d(0, ' + pos + 'px, 0)';
+                }
+            } else {
+                this.handlingArea.style.top = Math.round(pos) + 'px';
+            }
 
             if (this.relation >= 1) {
                 this.handlingArea.style.display = 'none';

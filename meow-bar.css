@@ -19,9 +19,9 @@
 }
 
 .meow-bar.initiated > div {
-    -webkit-transition: height 200ms ease-in, top 100ms linear;
-    -moz-transition: height 200ms ease-in, top 100ms linear;
-    transition: height 200ms ease-in, top 100ms linear;
+    -webkit-transition: height 200ms ease-in;
+    -moz-transition: height 200ms ease-in;
+    transition: height 200ms ease-in;
 }
 
 .meow-bar > div > div {
