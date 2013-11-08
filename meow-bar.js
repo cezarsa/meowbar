@@ -2,7 +2,8 @@
 
     var baseOptions = {
         margin: 5,
-        minScrollBarSize: 50
+        minScrollBarSize: 50,
+        init: false
     };
 
     var MeowBar = function(realScrollable, fakeScrollable, options) {
@@ -17,36 +18,30 @@
             if (!baseOptions.hasOwnProperty(option)) {
                 continue;
             }
-            this.options[option] = options[option] || baseOptions[option];
+            if (option in options) {
+                this.options[option] = options[option];
+            } else {
+                this.options[option] = baseOptions[option];
+            }
         }
 
-        this.createElements();
-        this.bindEvents();
+        this._createElements();
+        this._bindEvents();
+        if (this.options.init) {
+            this.refreshDimensions();
+        }
     };
 
     MeowBar.prototype = {
         constructor: MeowBar,
 
-        createElements: function() {
-            this.actualBarElement = document.createElement('div');
-
-            this.handlingArea = document.createElement('div');
-            this.handlingArea.appendChild(this.actualBarElement);
-
-            this.scrollBar = document.createElement('div');
-            this.scrollBar.className = 'meow-bar';
-            this.scrollBar.appendChild(this.handlingArea);
-
-            this.fakeScrollable.appendChild(this.scrollBar);
-        },
-
         refreshDimensions: function() {
-            this.calculateDimensions();
+            this._calculateDimensions();
 
             this.handlingArea.style.height = Math.round(this.scrollHeight) + 'px';
 
             var topPos = this.margin + (this.relation * this.realScrollable.scrollTop);
-            this.setScrollbar(topPos);
+            this._setScrollbar(topPos);
 
             if (!this.initiated) {
                 this.initiated = true;
@@ -57,7 +52,21 @@
             }
         },
 
-        calculateDimensions: function() {
+        _createElements: function() {
+            this.actualBarElement = document.createElement('div');
+
+            this.handlingArea = document.createElement('div');
+            this.handlingArea.appendChild(this.actualBarElement);
+
+            this.scrollBar = document.createElement('div');
+            this.scrollBar.className = 'meow-bar';
+            this.scrollBar.appendChild(this.handlingArea);
+
+            this.fakeScrollable.style.position = 'relative';
+            this.fakeScrollable.appendChild(this.scrollBar);
+        },
+
+        _calculateDimensions: function() {
             var realHeight = this.realScrollable.scrollHeight,
                 viewportTotalHeight = MeowBar.connector.elementHeight(this.fakeScrollable),
                 viewportHeight = viewportTotalHeight - (2 * this.options.margin),
@@ -76,33 +85,35 @@
             this.margin = this.options.margin + MeowBar.connector.topMargin(this.fakeScrollable);
         },
 
-        handleDrag: function(ev) {
+        _handleDrag: function(ev) {
             var self = this,
                 startPos = ev.clientY;
 
-            this.mousemoveHandler = function(ev) {
-                self.incrementScroll(ev.clientY - startPos);
-                self.updateScroll();
+            this._mousemoveHandler = function(ev) {
+                self._incrementScroll(ev.clientY - startPos);
+                self._updateScroll();
                 startPos = ev.clientY;
             };
-            MeowBar.connector.bindEvent(document, 'mousemove', this.mousemoveHandler);
+            MeowBar.connector.bindEvent(document, 'mousemove', this._mousemoveHandler);
         },
 
-        stopDrag: function() {
-            if (this.mousemoveHandler) {
-                MeowBar.connector.unbindEvent(document, 'mousemove', this.mousemoveHandler);
+        _stopDrag: function() {
+            if (this._mousemoveHandler) {
+                MeowBar.connector.unbindEvent(document, 'mousemove', this._mousemoveHandler);
+                this._mousemoveHandler = null;
             }
             if (this.mouseupHandler) {
                 MeowBar.connector.unbindEvent(document, 'mouseup', this.mouseupHandler);
+                this.mouseupHandler = null;
             }
         },
 
-        updateScroll: function() {
+        _updateScroll: function() {
             var scrollPos = (this.currentPos - this.margin) / this.relation;
             this.realScrollable.scrollTop = scrollPos;
         },
 
-        setScrollbar: function(pos) {
+        _setScrollbar: function(pos) {
             pos = Math.max(this.margin, Math.min(this.viewportHeight - this.scrollHeight + this.margin, pos));
             this.currentPos = pos;
             this.handlingArea.style.top = Math.round(pos) + 'px';
@@ -114,24 +125,29 @@
             }
         },
 
-        incrementScroll: function(increment) {
-            this.setScrollbar(this.currentPos + increment);
+        _incrementScroll: function(increment) {
+            this._setScrollbar(this.currentPos + increment);
         },
 
-        bindEvents: function() {
+        _bindEvents: function() {
             var self = this;
             self.scrollHandler = function(ev) {
                 var topPos = self.margin + (self.relation * self.realScrollable.scrollTop);
-                self.setScrollbar(topPos);
+                self._setScrollbar(topPos);
             };
             self.mousedownHandler = function(ev) {
+                // Right button
+                if (ev.which === 3 || ev.button === 2) {
+                    return;
+                }
                 MeowBar.connector.preventDefault(ev);
 
-                self.handleDrag(ev);
+                self._stopDrag();
+                self._handleDrag(ev);
                 self.mouseupHandler = function(ev) {
                     MeowBar.connector.preventDefault(ev);
 
-                    self.stopDrag();
+                    self._stopDrag();
                 };
                 MeowBar.connector.bindEvent(document, 'mouseup', self.mouseupHandler);
             };
@@ -146,7 +162,7 @@
             if (this.scrollBar && this.mousedownHandler) {
                 MeowBar.connector.unbindEvent(this.scrollBar, 'mousedown', this.mousedownHandler);
             }
-            this.stopDrag();
+            this._stopDrag();
         }
     };
 
