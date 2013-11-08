@@ -1,10 +1,24 @@
 (function(global) {
 
-    var MeowBar = function(realScrollable, fakeScrollable) {
+    var baseOptions = {
+        margin: 5,
+        minScrollBarSize: 50
+    };
+
+    var MeowBar = function(realScrollable, fakeScrollable, options) {
         this.realScrollable = realScrollable;
         this.fakeScrollable = fakeScrollable;
         this.currentPos = 0;
         this.initiated = false;
+
+        options = options || {};
+        this.options = {};
+        for (var option in baseOptions) {
+            if (!baseOptions.hasOwnProperty(option)) {
+                continue;
+            }
+            this.options[option] = options[option] || baseOptions[option];
+        }
 
         this.createElements();
         this.bindEvents();
@@ -12,8 +26,6 @@
 
     MeowBar.prototype = {
         constructor: MeowBar,
-        margin: 5,
-        minScrollBarSize: 50,
 
         createElements: function() {
             this.actualBarElement = document.createElement('div');
@@ -48,7 +60,7 @@
         calculateDimensions: function() {
             var realHeight = this.realScrollable.scrollHeight,
                 viewportTotalHeight = MeowBar.connector.elementHeight(this.fakeScrollable),
-                viewportHeight = viewportTotalHeight - (2 * MeowBar.prototype.margin),
+                viewportHeight = viewportTotalHeight - (2 * this.options.margin),
                 relation = viewportHeight / realHeight;
 
             var height = 0;
@@ -56,12 +68,12 @@
                 height = relation * viewportHeight;
             }
 
-            this.scrollHeight = Math.max(this.minScrollBarSize, height);
+            this.scrollHeight = Math.max(this.options.minScrollBarSize, height);
             this.viewportHeight = viewportHeight;
 
             var adjustedViewportHeight = this.viewportHeight + height - this.scrollHeight;
             this.relation = adjustedViewportHeight / realHeight;
-            this.margin = MeowBar.prototype.margin + MeowBar.connector.topMargin(this.fakeScrollable);
+            this.margin = this.options.margin + MeowBar.connector.topMargin(this.fakeScrollable);
         },
 
         handleDrag: function(ev) {
